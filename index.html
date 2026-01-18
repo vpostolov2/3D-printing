@@ -5,200 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Print Price Calculator</title>
   <style>
-    :root {
-      --bg: #0f172a;          /* slate-900 */
-      --card: #111827;        /* gray-900 */
-      --muted: #94a3b8;       /* slate-400 */
-      --text: #e5e7eb;        /* gray-200 */
-      --accent: #38bdf8;      /* sky-400 */
-      --accent-2: #22c55e;    /* green-500 */
-      --danger: #ef4444;      /* red-500 */
-      --ring: #38bdf8;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 10% 0%, #0b1224 0%, var(--bg) 40%), var(--bg);
-      color: var(--text);
-      display: grid;
-      place-items: center;
-      padding: 16px;
-    }
-    .app {
-      width: 100%;
-      max-width: 560px;
-      background: linear-gradient(180deg, #0b1224, var(--card));
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.4);
-      padding: 20px;
-    }
-    h1 { margin: 0 0 8px; font-size: 1.5rem; }
-    p.sub { margin: 0 0 16px; color: var(--muted); }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: .9rem; color: var(--muted); }
-    input {
-      background: #020617; border: 1px solid #1f2933; color: var(--text);
-      border-radius: 10px; padding: 10px 12px; font-size: 1rem; outline: none;
-    }
-    input:focus { border-color: var(--ring); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .time { grid-column: 1 / -1; }
-    .time .row { grid-template-columns: 1fr 1fr; }
-    .btn {
-      grid-column: 1 / -1; margin-top: 8px; padding: 12px 14px; border-radius: 12px;
-      border: 0; background: linear-gradient(90deg, var(--accent), #60a5fa);
-      color: #020617; font-weight: 700; font-size: 1rem; cursor: pointer;
-    }
-    .btn:active { transform: translateY(1px); }
-    .result { margin-top: 16px; padding: 14px; border-radius: 12px; background: #020617; border: 1px solid #1f2933; }
-    .result h2 { margin: 0 0 6px; font-size: 1.1rem; }
-    .price { font-size: 1.8rem; font-weight: 800; color: var(--accent-2); }
-    .muted { color: var(--muted); font-size: .9rem; }
-    .error { color: var(--danger); font-size: .9rem; }
-    footer { margin-top: 12px; color: var(--muted); font-size: .8rem; text-align: center; }
-    @media (max-width: 420px) {
-      .grid { grid-template-columns: 1fr; }
-    }
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#38bdf8; --accent-2:#22c55e; --danger:#ef4444; --ring:#38bdf8; }
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(1200px 600px at 10% 0%,#0b1224 0%,var(--bg) 40%),var(--bg);color:var(--text);display:grid;place-items:center;padding:16px}
+    .app{width:100%;max-width:560px;background:linear-gradient(180deg,#0b1224,var(--card));border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:20px}
+    h1{margin:0 0 8px;font-size:1.5rem} .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} .field{display:flex;flex-direction:column;gap:6px}
+    label{font-size:.9rem;color:var(--muted)} input{background:#020617;border:1px solid #1f2933;color:var(--text);border-radius:10px;padding:10px 12px;font-size:1rem;outline:none}
+    input:focus{border-color:var(--ring);box-shadow:0 0 0 3px rgba(56,189,248,.2)} .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .time{grid-column:1/-1} .btn{grid-column:1/-1;margin-top:8px;padding:12px 14px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#60a5fa);color:#020617;font-weight:700;font-size:1rem;cursor:pointer}
+    .result{margin-top:16px;padding:14px;border-radius:12px;background:#020617;border:1px solid #1f2933} .price{font-size:1.8rem;font-weight:800;color:var(--accent-2)} .error{color:var(--danger);font-size:.9rem}
+    @media (max-width:420px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="app">
-    <h1>3D Print Price Calculator</h1>
+<div class="app">
+  <h1>3D Print Price Calculator</h1>
+  <form class="grid" onsubmit="event.preventDefault(); calculate();">
+    <div class="field"><label>CF – Filament price (CZK per gram)</label><input id="cf" type="number" step="0.0001" value="0.1714" /></div>
+    <div class="field"><label>CE – Electricity price (CZK per kWh)</label><input id="ce" type="number" step="0.01" value="7" /></div>
+    <div class="field time"><label>Time of printing hours and minutes</label><div class="row"><input id="hours" type="number" min="0" step="1" placeholder="Hours" /><input id="minutes" type="number" min="0" max="59" step="1" placeholder="Minutes" /></div></div>
+    <div class="field"><label>Weight (grams)</label><input id="weight" type="number" min="0" step="0.1" placeholder="e.g. 120" /></div>
+    <div class="field"><label>Quantity</label><input id="qty" type="number" min="1" step="1" value="1" /></div>
+    <button class="btn" type="submit">Calculate price</button>
+  </form>
+  <div id="out" class="result" hidden><h2>Total price</h2><div class="price" id="price">—</div></div><div id="err" class="error"></div>
 
-    <!-- Known constants -->
-    <form class="grid" onsubmit="event.preventDefault(); calculate();">
-      <div class="field">
-        <label>CF – Filament price (CZK per gram)</label>
-        <input id="cf" type="number" step="0.0001" value="0.1714" />
-      </div>
-      <div class="field">
-        <label>CE – Electricity price (CZK per kWh)</label>
-        <input id="ce" type="number" step="0.01" value="7" />
-      </div>
-
-      <!-- User inputs -->
-      <div class="field time">
-        <label>Time of printing hours and minutes</label>
-        <div class="row">
-          <input id="hours" type="number" min="0" step="1" placeholder="Hours" />
-          <input id="minutes" type="number" min="0" max="59" step="1" placeholder="Minutes" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Weight (grams)</label>
-        <input id="weight" type="number" min="0" step="0.1" placeholder="e.g. 120" />
-      </div>
-
-      <button class="btn" type="submit">Calculate price</button>
-    </form>
-
-    <div id="out" class="result" hidden>
-      <h2>Total price</h2>
-      <div class="price" id="price">—</div>
-      <div class="muted" id="details"></div>
+  <!-- Invoice Modal (kept in DOM; hidden via display:none) -->
+  <div id="invoiceModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#fff; color:#020617; width:100%; max-width:720px; border-radius:12px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.4);">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;"><h2 style="margin:0;">Invoice</h2><button onclick="closeInvoice()" style="border:0; background:#ef4444; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer;">Close</button></div>
+      <hr />
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div><strong>Timi Printing s.r.o.</strong><br/>3D Printing Services<br/>Rosice u Brna, Czech Republic<br/>IČO: 12345678</div><div style="text-align:right;"><strong>Invoice No:</strong> <span id="invNo"></span><br/><strong>Date:</strong> <span id="invDate"></span></div></div>
+      <hr />
+      <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="text-align:left; border-bottom:1px solid #e5e7eb; padding:8px;">Description</th><th style="text-align:right; border-bottom:1px solid #e5e7eb; padding:8px;">Unit price</th><th style="text-align:right; border-bottom:1px solid #e5e7eb; padding:8px;">Qty</th><th style="text-align:right; border-bottom:1px solid #e5e7eb; padding:8px;">Total</th></tr></thead>
+        <tbody><tr><td style="padding:8px;">3D Print (Weight <span id="invWeight"></span> g, Time <span id="invTime"></span>)</td><td style="padding:8px; text-align:right;">CZK <span id="invUnit"></span></td><td style="padding:8px; text-align:right;"><span id="invQty"></span></td><td style="padding:8px; text-align:right;">CZK <span id="invTotal"></span></td></tr></tbody></table>
+      <hr />
+      <div style="display:flex; justify-content:space-between; align-items:center;"><strong>Total:</strong><strong>CZK <span id="invTotal2"></span></strong></div>
     </div>
-    <div id="err" class="error"></div>
-
-    <!-- Invoice Modal -->
-    <div id="invoiceModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; padding:16px;">
-      <div style="background:#fff; color:#020617; width:100%; max-width:720px; border-radius:12px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.4);">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-          <h2 style="margin:0;">Invoice</h2>
-          <button onclick="closeInvoice()" style="border:0; background:#ef4444; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer;">Close</button>
-        </div>
-        <hr />
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div>
-            <strong>Timi Printing s.r.o.</strong><br/>
-            3D Printing Services<br/>
-            Rosice u Brna, Czech Republic<br/>
-            IČO: 12345678
-          </div>
-          <div style="text-align:right;">
-            <strong>Invoice No:</strong> <span id="invNo"></span><br/>
-            <strong>Date:</strong> <span id="invDate"></span>
-          </div>
-        </div>
-        <hr />
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="text-align:left; border-bottom:1px solid #e5e7eb; padding:8px;">Description</th>
-              <th style="text-align:right; border-bottom:1px solid #e5e7eb; padding:8px;">Qty</th>
-              <th style="text-align:right; border-bottom:1px solid #e5e7eb; padding:8px;">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding:8px;">3D Print (Weight <span id="invWeight"></span> g, Time <span id="invTime"></span> h)</td>
-              <td style="padding:8px; text-align:right;">1</td>
-              <td style="padding:8px; text-align:right;">CZK <span id="invTotal"></span></td>
-            </tr>
-          </tbody>
-        </table>
-        <hr />
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>Total:</strong>
-          <strong>CZK <span id="invTotal2"></span></strong>
-        </div>
-        <div style="margin-top:12px; text-align:right;">
-          <button onclick="window.print()" style="border:0; background:#22c55e; color:#020617; padding:10px 14px; border-radius:10px; cursor:pointer;">Print Invoice</button>
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      <!--Formula: (30 + (CF × weight) + (0.07 × CE × time_in_hours)) × 1.2, rounded up to nearest 5 CZK-->
-    </footer>
   </div>
-
-  <script>
-    function calculate() {
-      const cf = parseFloat(document.getElementById('cf').value);
-      const ce = parseFloat(document.getElementById('ce').value);
-      const h = parseFloat(document.getElementById('hours').value) || 0;
-      const m = parseFloat(document.getElementById('minutes').value) || 0;
-      const w = parseFloat(document.getElementById('weight').value);
-      const err = document.getElementById('err');
-      const out = document.getElementById('out');
-      const priceEl = document.getElementById('price');
-      const detailsEl = document.getElementById('details');
-
-      err.textContent = '';
-
-      if (isNaN(cf) || isNaN(ce) || isNaN(w)) {
-        err.textContent = 'Please enter valid numbers for CF, CE and Weight.';
-        out.hidden = true;
-        return;
-      }
-      if (h < 0 || m < 0 || m >= 60) {
-        err.textContent = 'Minutes must be between 0 and 59, hours cannot be negative.';
-        out.hidden = true;
-        return;
-      }
-
-      const timeHours = h + (m / 60);
-      const base = 30 + (cf * w) + (0.07 * ce * timeHours); // 30 CZK base price
-      const total = base * 1.2;
-      const rounded = Math.ceil(total / 5) * 5; // round up to nearest 5 CZK
-
-      priceEl.textContent = rounded.toFixed(0) + ' CZK';
-      out.hidden = false;
-
-      // Populate and show invoice
-      document.getElementById('invNo').textContent = 'TP-' + Date.now();
-      document.getElementById('invDate').textContent = new Date().toLocaleDateString();
-      document.getElementById('invWeight').textContent = w.toFixed(1);
-      document.getElementById('invTime').textContent = timeHours.toFixed(2);
-      document.getElementById('invTotal').textContent = rounded.toFixed(0);
-      document.getElementById('invTotal2').textContent = rounded.toFixed(0);
-      document.getElementById('invoiceModal').style.display = 'flex';
-    }
-  function closeInvoice(){ document.getElementById('invoiceModal').style.display='none'; }
-  </script>
-</body>
-</html>
+</div>
+<script>
+function calculate(){
+  const cf=parseFloat(cfEl().value), ce=parseFloat(ceEl().value);
+  const h=parseFloat(hoursEl().value)||0, m=parseFloat(minutesEl().value)||0, w=parseFloat(weightEl().value), qty=parseInt(qtyEl().value||'1',10);
+  const err=document.getElementById('err'), out=document.getElementById('out'), priceEl=document.getElementById('price'); err.textContent='';
+  if([cf,ce,w].some(isNaN)){err.textContent='Please enter valid numbers for CF, CE and Weight.'; out.hidden=true; return;} if(h<0||m<0||m>=60){err.textContent='Minutes must be between 0 and 59, hours cannot be negative.'; out.hidden=true; return;}
+  const timeHours=h+(m/60), base=30+(cf*w)+(0.07*ce*timeHours), total=base*1.2, rounded=Math.ceil(total/5)*5, grand=rounded*qty;
+  priceEl.textContent=grand.toFixed(0)+' CZK'; out.hidden=false;
+  document.getElementById('invNo').textContent='TP-'+Date.now(); document.getElementById('invDate').textContent=new Date().toLocaleDateString();
+  document.getElementById('invWeight').textContent=w.toFixed(1); document.getElementById('invTime').textContent=formatTime(timeHours);
+  document.getElementById('invQty').textContent=qty; document.getElementById('invUnit').textContent=rounded.toFixed(0);
+  document.getElementById('invTotal').textContent=grand.toFixed(0); document.getElementById('invTotal2').textContent=grand.toFixed(0);
+  document.getElementById('invoiceModal').style.display='flex';
+}
+const cfEl=()=>document.getElementById('cf'), ceEl=()=>document.getElementById('ce'), hoursEl=()=>document.getElementById('hours'), minutesEl=()=>document.getElementById('minutes'), weightEl=()=>document.getElementById('weight'), qtyEl=()=>document.getElementById('qty');
+function formatTime(hours){const h=Math.floor(hours), m=Math.round((hours-h)*60); return `${h}h ${m} min`;}
+function closeInvoice(){document.getElementById('invoiceModal').style.display='none';}
+</script>
+</body></html>
